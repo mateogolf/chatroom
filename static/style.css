@@ -1,0 +1,21 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+li{
+    margin-left: 10px;
+    list-style: none;
+}
+#chat{
+    border: 1px solid black;
+    width:90%;
+    height:150px;
+    overflow: auto;
+}
+input{
+    width:90%;
+}
+.server_response{
+    color: grey;
+    /* text-align: center; */
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chatroom</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function () {
+        const socket = io.connect();
+        let user = {name: "",id:""}
+        user.name = prompt("Login to Chatroom below.\nYour Name:");
+        if(user.name.length==0) window.location.reload(); //blank entry
+        
+        //EMIT new_user
+        socket.emit('new_user',{name: user.name})
+        socket.on('joined', (data) => {
+            $('#chat').append(`<li class="server_response">****${data.name} joined the chat****</li>`)
+        })
+        //LISTEN for existing users
+        let users=[]
+        socket.on('existing_users',function(data){
+            users=data.users;
+        })
+        //LISTEN for login:add data.id to user
+        socket.on('login',function(data){
+            user.id=data._id;
+        })
+        socket.on('disconnected_user', (data) => {
+            console.log("Disconnected user, done on user's side: ", data.user)
+            $(`#${data.user.id}`).remove();
+            $('#chat').append(`<li class="server_response">****${data.user.name} disconnected from the chat****</li>`)
+        })
+        //Message
+        $("#chatbox").submit(function (event) {
+            let message = $("#message").val();
+            socket.emit("sent",{name:user.name,message:message})
+            $("#message").val("");
+            event.preventDefault();
+        })
+        //LISTEN
+        socket.on('received',(data)=>{
+            $('#chat').append(`<li>${data.message_received}</li>`)
+        })
+    })
+    </script>
+</head>
+<body>
+    <h2>Conversation Board</h2>
+    <ul id="chat"></ul>
+    <form id="chatbox">
+        <p><input type="text" id="message" placeholder="enter your message here"></p>
+        <p><button type="submit">Send</button></p>
+    </form>
+</body>
+</html>
